@@ -1,6 +1,8 @@
 Program CircularQueueWithCaseMenu; // Реализация циклической очереди на Pascal
 
-Uses Crt; // Для создания case-меню (CRT — Console RunTime).
+Uses 
+  Crt, // Для создания case-меню (CRT — Console RunTime).
+  Sysutils;
 
 { ТИПЫ (мутные) }
 
@@ -73,7 +75,111 @@ Begin
   End;
 End;
 
+// Показывает диалоговое окно для ввода целого числа.
+Function EnterIntegerDialogue(Text: UnicodeString; 
+  CancelValue: Integer):Integer;
+Var
+  Done: Boolean;
+  CurrentString: String;
+  Ch: Char;
+Begin
+  Done := False;
+  CurrentString := '';
+  While Done = False Do
+  Begin
+    ClrScr;
+    TextColor(12);
+    PrintText(Text, 1, 5);
+    TextColor(15);
+    PrintText(CurrentString, 2, 5);
+    PrintText('Введите число и нажмите Enter, чтобы подтвердить.', 4, 5);
+    PrintText('Нажмите Escape, чтобы отменить.', 5, 5);
+    Ch := ReadKey;
+    If (Ord(Ch) >= 48) And (Ord(Ch) <= 57) Then
+      CurrentString := CurrentString + Ch
+    Else If Ch = #13 Then // Enter
+    Begin
+      EnterIntegerDialogue := StrToInt(CurrentString);
+      Done := True;
+    End
+    Else If Ch = #8 Then // Backspace
+      CurrentString := Copy(CurrentString, 1, Length(CurrentString) - 1)
+    Else If Ch = #27 Then // Esc
+    Begin
+      EnterIntegerDialogue := CancelValue;
+      Done := True;
+    End;
+  End;
+End;
+
+{ ФУНКЦИИ ДЛЯ ВЗАИМОДЕЙСТВИЯ СО СТРУКТУРОЙ }
+
+Function InputQueue:Boolean; // Создать структуру (ввести элементы)
+Var
+  QueueLength : Integer;
+Begin
+  ClrScr;
+  QueueLength := EnterIntegerDialogue('Введите длину очереди.', 0);
+  InputQueue := True;
+End;
+Function ClearQueue:Boolean;
+Begin
+  ClrScr;
+  PrintText('Очистить очередь.', 1, 1);
+  ReadKey;
+  ClearQueue := True;
+End;
+Function EmptyElement:Boolean; // Проверка на наличие элементов
+Begin
+  ClrScr;
+  ReadKey;
+  EmptyElement := True;
+End;
+Function ReadElement:Boolean; // Вывести элемент на экран
+Begin
+  ClrScr;
+  PrintText('Прочесть элемент.', 1, 1);
+  ReadKey;
+  ReadElement := True;
+End;
+Function PushElement:Boolean; // Вставка
+Begin
+  ClrScr;
+  PrintText('Вставить элемент.', 1, 1);
+  ReadKey;
+  PushElement := True;
+End;
+Function DeleteElement:Boolean;
+Begin
+  ClrScr;
+  PrintText('Удалить элемент.', 1, 1);
+  ReadKey;
+  DeleteElement := True;
+End;
+Function ShowAllElements:Boolean;
+Begin
+  ClrScr;
+  PrintText('Показать все элементы.', 1, 1);
+  ReadKey;
+  ShowAllElements := True;
+End;
+
 { ПРОЦЕДУРЫ ДЛЯ ВЗАИМОДЕЙСТВИЯ С ПОЛЬЗОВАТЕЛЕМ }
+
+Procedure ExecuteCommand; // Выполнить выбранную в меню команду
+Var
+  IsSuccessful : Boolean;
+Begin
+  Case SelectedMenuEntry Of
+    1: IsSuccessful := InputQueue;
+    2: IsSuccessful := ClearQueue;
+    3: IsSuccessful := ReadElement;
+    4: IsSuccessful := PushElement;
+    5: IsSuccessful := DeleteElement;
+    6: IsSuccessful := ShowAllElements;
+    7: Quit := True;
+  End;
+End;
 
 // Перемещение выделения элемента меню для навигации по нему.
 Procedure MoveSelection(Up : Boolean);
@@ -101,8 +207,9 @@ Var
 Begin
   Ch := ReadKey;
   Case Ch Of
-    'q': Quit := True;
-    #0: Begin
+    'q': Quit := True; // Стандартная клавиша выхода из консольных приложений.
+    #13: ExecuteCommand; // Клавиша Enter.
+    #0: Begin // #0 — особая клавиша.
       Ch := ReadKey; // Читаем «расширенную» клавишу
       Case Ch Of
         #72: MoveSelection(True);
@@ -111,31 +218,6 @@ Begin
     End; // упростить логику,
   End; // а то многовато
 End; // что-то вложенности...
-
-{ ФУНКЦИИ ДЛЯ ВЗАИМОДЕЙСТВИЯ СО СТРУКТУРОЙ }
-
-{Function Input():Boolean; // Создать структуру (ввести элементы)
-Begin
-  ClrScr;
-End;
-Function Clear():Boolean; // Очистка структуры
-Begin
-  SetLength(Queue.Data, 1);
-  Queue.Head := 0;
-  Queue.Tail := 0;
-End;
-Function Empty():Boolean; // Проверка на наличие элементов
-Begin
-  If Queue.Head = Queue.Tail Then
-  Begin
-    Empty := True;
-  End;
-End;
-Function Push(NewItem : Integer):Boolean; // Вставка
-Begin
-  Queue.Tail := NewItem;
-  Push := True;
-End;}
 
 { ОСНОВНАЯ ПРОГРАММА }
 Begin
