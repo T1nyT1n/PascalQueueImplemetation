@@ -6,8 +6,9 @@ A TUI application to demonstrate the operation of a circular queue in Pascal.
 
 ## Features
 
+- Implementation using a linked list
 - Cross-platform
-- Case menu with arrow key navigation
+- Case-menu with arrow key navigation
 
 ## Functions
 
@@ -21,7 +22,13 @@ A TUI application to demonstrate the operation of a circular queue in Pascal.
 
 ### Compilation
 
-Use [Free Pascal](https://www.freepascal.org/) to compile the program for your platform.
+Use [Free Pascal](https://www.freepascal.org/) to compile the program for your platform. By default, the Windows command line uses the CP866 encoding, which does not support Russian. To compile the program with UTF-8 support, add a special compiler flag.
+
+```
+fpc -FcUTF-8 main.pas
+```
+
+Linux terminals most commonly use UTF-8 by default.
 
 ### Usage
 
