@@ -1,3 +1,4 @@
 # Ignore the binary files
 main.exe
 main.o
+main
