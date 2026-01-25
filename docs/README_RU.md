@@ -1,4 +1,4 @@
-[English](../README.md) | **Русский**
+[English](README.md) | **Русский**
 
 # Реализация циклической очереди на Pascal
 

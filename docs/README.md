@@ -1,4 +1,4 @@
-**English** | [Русский](docs/README_RU.md)
+**English** | [Русский](README_RU.md)
 
 # Circular Queue Implementation in Pascal
 
