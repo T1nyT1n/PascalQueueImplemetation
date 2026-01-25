@@ -23,13 +23,7 @@ A TUI application to demonstrate the operation of a circular queue in Pascal.
 
 ### Compilation
 
-Use [Free Pascal](https://www.freepascal.org/) to compile the program for your platform. By default, the Windows command line uses the CP866 encoding, which does not support Russian. To compile the program with UTF-8 support, add a special compiler flag.
-
-```
-fpc -FcUTF-8 main.pas
-```
-
-UNIX terminals most commonly use UTF-8 by default.
+Use [Free Pascal](https://www.freepascal.org/) to compile the program for your platform.
 
 ### Usage
 

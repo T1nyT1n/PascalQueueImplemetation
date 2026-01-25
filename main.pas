@@ -1,4 +1,5 @@
 Program CircularQueueWithCaseMenu; // Реализация циклической очереди на Pascal
+{$codepage UTF-8} // UTF-8 для работы с Unicode (нормальные русские буквы)
 
 Uses 
   Crt, // Для создания case-меню (CRT — Console RunTime).
