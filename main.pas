@@ -3,7 +3,7 @@ Program CircularQueueWithCaseMenu; // Реализация циклическо�
 
 Uses 
   Crt, // Для создания case-меню (CRT — Console RunTime).
-  Sysutils;
+  SysUtils;
 
 { ТИПЫ (мутные) }
 
@@ -16,17 +16,23 @@ Type
     Next: NextListItem;
   End;
 
+  { В самом типе очереди нужно хранить начало и конец. И этого достаточно. }
+  Queue = record
+    Head, Tail : ^ListItem;
+  End;
+
 { ПЕРЕМЕННЫЕ }
 
 Var
-  MenuEntries : Array[1..7] of UnicodeString = (
-    '1. Создать очередь.',
-    '2. Очистить очередь.',
-    '3. Прочесть элемент.',
-    '4. Вставить элемент.',
-    '5. Удалить элемент.',
-    '6. Показать все элементы.',
-    '7. Выход.'
+  Q : Queue; // Переменная, которая хранит очередь
+  // При изменении не забывайте корректировать ExecuteCommand!
+  MenuEntries : Array[1..6] of UnicodeString = (
+    '1. Вставить элемент.',
+    '2. Прочесть элемент.',
+    '3. Удалить элемент.',
+    '4. Очистить очередь.',
+    '5. Показать все элементы.',
+    '6. Выход.'
   );
   SelectedMenuEntry : Integer; // По умолчанию 0, то есть в начале списка.
   Quit : Boolean; // Не пора ли уже выходить из программы?
@@ -46,7 +52,7 @@ Begin
   перейти к месту, где уже «можно» писать. То есть, начинаем писать не в конце 
   левой границы, а в начале пространства для текста. Для Y всё то же самое — 
   вычисляем, где можно начать, а затем добавляем текущую строку. }
-  CenterX := ((WindMaxX - WindMinX + 1) - Length(text)) div 2 + 1;
+  CenterX := ((WindMaxX - WindMinX + 1) - Length(Text)) div 2 + 1;
   CenterY := ((WindMaxY - WindMinY + 1) - AmountOfLines) div 2 + Line;
   GotoXY(CenterX, CenterY);
   Write(Text);
@@ -91,7 +97,7 @@ Begin
     TextColor(12);
     PrintText(Text, 1, 5);
     TextColor(15);
-    PrintText(CurrentString, 2, 5);
+    PrintText(UnicodeString(CurrentString), 2, 5);
     PrintText('Введите число и нажмите Enter, чтобы подтвердить.', 4, 5);
     PrintText('Нажмите Escape, чтобы отменить.', 5, 5);
     Ch := ReadKey;
@@ -109,66 +115,107 @@ End;
 
 { ФУНКЦИИ ДЛЯ ВЗАИМОДЕЙСТВИЯ СО СТРУКТУРОЙ }
 
-Function EmptyElement:Boolean; // Проверка на наличие элементов
+Function EmptyQueue:Boolean; // Проверка на наличие элементов
 Begin
-  EmptyElement := True;
+  If Q.Tail = nil Then
+    EmptyQueue := True
+  Else
+    EmptyQueue := False;
 End;
-Function ClearQueue:Boolean;
-Begin
-  ClrScr;
-  PrintText('Очистить очередь.', 1, 1);
-  ReadKey;
-  ClearQueue := True;
-End;
-Function EmptyElement:Boolean; // Проверка на наличие элементов
-Begin
-  ClrScr;
-  ReadKey;
-  EmptyElement := True;
-End;
-Function ReadElement:Boolean; // Вывести элемент на экран
+Procedure PushElement; // Вставка
+Var
+  IntegerToInsert : Integer;
+  NewListItem : ^ListItem;
 Begin
   ClrScr;
-  PrintText('Прочесть элемент.', 1, 1);
+  IntegerToInsert := EnterIntegerDialogue('Вставить элемент.');
+  New(NewListItem);
+  NewListItem^.Data := IntegerToInsert;
+  NewListItem^.Next := nil;
+  If EmptyQueue Then
+  Begin
+    Q.Tail := NewListItem;
+    Q.Head := NewListItem;
+  End
+  Else
+  Begin
+    Q.Tail^.Next := NewListItem;
+    Q.Tail := NewListItem;
+  End;
+  ClrScr;
+  PrintText('Элемент ' + UnicodeString(IntToStr(IntegerToInsert)) + 
+    ' вставлен в конец очереди.', 1, 1);
   ReadKey;
-  ReadElement := True;
 End;
-Function PushElement:Boolean; // Вставка
+Procedure ReadElement; // Вывести элемент на экран
 Begin
   ClrScr;
-  PrintText('Вставить элемент.', 1, 1);
+  TextColor(12);
+  PrintText('Прочесть элемент.', 1, 3);
+  TextColor(15);
+  If Not EmptyQueue Then
+  Begin
+    PrintText('Последний элемент в очереди:', 2, 3);
+    PrintText(UnicodeString(IntToStr(Q.Tail^.Data)), 3, 3);
+  End
+  Else
+  Begin
+    PrintText('Очередь пуста!', 2, 3);
+    PrintText('Добавьте хотя бы один элемент, чтобы прочитать его.', 3, 3);
+  End;
   ReadKey;
-  PushElement := True;
 End;
-Function DeleteElement:Boolean;
+Procedure DeleteElement;
+Var
+  OldHead : ListItem;
 Begin
   ClrScr;
-  PrintText('Удалить элемент.', 1, 1);
+  TextColor(12);
+  PrintText('Удалить элемент.', 1, 2);
+  TextColor(15);
+  If Not EmptyQueue Then
+  Begin
+    OldHead := Q.Head^;
+    Q.Head := Q.Head^.Next;
+    If OldHead.Next = nil Then // На случай если это единственный элемент...
+    Begin
+      Q.Tail := nil; // ...убираем ещё и хвост, т.к. Head = Tail.
+    End;
+    PrintText('Элемент ' + UnicodeString(IntToStr(OldHead.Data)) + 
+      ' удалён из головы очереди.', 2, 2);
+  End
+  Else
+    PrintText('Нечего удалять, очередь пуста!', 2, 2);
   ReadKey;
-  DeleteElement := True;
 End;
-Function ShowAllElements:Boolean;
+Procedure ClearQueue;
+Begin
+  ClrScr;
+  TextColor(12);
+  PrintText('Очистить очередь.', 1, 3);
+  TextColor(15);
+  PrintText('Очередь очищена. Удалено элементов:', 2, 3);
+  PrintText('?', 3, 3);
+  ReadKey;
+End;
+Procedure ShowAllElements;
 Begin
   ClrScr;
   PrintText('Показать все элементы.', 1, 1);
   ReadKey;
-  ShowAllElements := True;
 End;
 
 { ПРОЦЕДУРЫ ДЛЯ ВЗАИМОДЕЙСТВИЯ С ПОЛЬЗОВАТЕЛЕМ }
 
 Procedure ExecuteCommand; // Выполнить выбранную в меню команду
-Var
-  IsSuccessful : Boolean;
-Begin
+Begin // При изменении не забывайте корректировать MenuEntries!
   Case SelectedMenuEntry Of
-    1: IsSuccessful := InputQueue;
-    2: IsSuccessful := ClearQueue;
-    3: IsSuccessful := ReadElement;
-    4: IsSuccessful := PushElement;
-    5: IsSuccessful := DeleteElement;
-    6: IsSuccessful := ShowAllElements;
-    7: Quit := True;
+    1: PushElement;
+    2: ReadElement;
+    3: DeleteElement;
+    4: ClearQueue;
+    5: ShowAllElements;
+    6: Quit := True;
   End;
 End;
 
