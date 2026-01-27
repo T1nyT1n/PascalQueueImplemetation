@@ -77,8 +77,7 @@ Begin
 End;
 
 // Показывает диалоговое окно для ввода целого числа.
-Function EnterIntegerDialogue(Text: UnicodeString; 
-  CancelValue: Integer):Integer;
+Function EnterIntegerDialogue(Text: UnicodeString):Integer;
 Var
   Done: Boolean;
   CurrentString: String;
