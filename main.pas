@@ -104,24 +104,15 @@ Begin
       Done := True;
     End
     Else If Ch = #8 Then // Backspace
-      CurrentString := Copy(CurrentString, 1, Length(CurrentString) - 1)
-    Else If Ch = #27 Then // Esc
-    Begin
-      EnterIntegerDialogue := CancelValue;
-      Done := True;
-    End;
+      CurrentString := Copy(CurrentString, 1, Length(CurrentString) - 1);
   End;
 End;
 
 { ФУНКЦИИ ДЛЯ ВЗАИМОДЕЙСТВИЯ СО СТРУКТУРОЙ }
 
-Function InputQueue:Boolean; // Создать структуру (ввести элементы)
-Var
-  QueueLength : Integer;
+Function EmptyElement:Boolean; // Проверка на наличие элементов
 Begin
-  ClrScr;
-  QueueLength := EnterIntegerDialogue('Введите длину очереди.', 0);
-  InputQueue := True;
+  EmptyElement := True;
 End;
 Function ClearQueue:Boolean;
 Begin

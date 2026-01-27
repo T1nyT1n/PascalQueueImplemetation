@@ -32,4 +32,4 @@ Use [Free Pascal](https://www.freepascal.org/) to compile the program for your p
 - Press the Enter key to activate the selected function.
 - After activating a function, follow the on-screen instructions to proceed.
 - You can exit the program from the menu not only by selecting the corresponding menu item but also by pressing the `q` key. This references the standard behavior of console utilities in some UNIX-like systems.
-- Almost all program menu items, after activation, prompt you to enter a number. You can either enter a number and confirm it or cancel the operation. The ability to correct a mistakenly entered digit by pressing the `Backspace` key is also implemented.
+- Almost all program menu items, after activation, prompt you to enter a number. The ability to correct a mistakenly entered digit by pressing the `Backspace` key is also implemented.
