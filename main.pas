@@ -95,16 +95,15 @@ Begin
   Begin
     ClrScr;
     TextColor(12);
-    PrintText(Text, 1, 5);
+    PrintText(Text, 1, 4);
     TextColor(15);
-    PrintText(UnicodeString(CurrentString), 2, 5);
-    PrintText('Введите число и нажмите Enter, чтобы подтвердить.', 4, 5);
-    PrintText('Нажмите Escape, чтобы отменить.', 5, 5);
+    PrintText(UnicodeString(CurrentString), 2, 4);
+    PrintText('Введите число и нажмите Enter, чтобы подтвердить.', 4, 4);
     Ch := ReadKey;
     If (Ord(Ch) >= 48) And (Ord(Ch) <= 57) Then
       CurrentString := CurrentString + Ch
     Else If Ch = #13 Then // Enter
-    Begin
+    Begin // TODO: добавить проверку на наличие в строке хоть чего-то
       EnterIntegerDialogue := StrToInt(CurrentString);
       Done := True;
     End
