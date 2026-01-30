@@ -3,6 +3,9 @@ Program CircularQueueWithCaseMenu; // Реализация циклическо�
 
 Uses 
   Crt, // Для создания case-меню (CRT — Console RunTime).
+  {$IFDEF UNIX}
+  CWString,
+  {$ENDIF}
   SysUtils;
 
 { ТИПЫ (мутные) }
