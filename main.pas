@@ -158,7 +158,9 @@ Begin
   If Not EmptyQueue Then
   Begin
     PrintText('Последний элемент в очереди:', 2, 3);
+    TextColor(14);
     PrintText(UnicodeString(IntToStr(Q.Tail^.Data)), 3, 3);
+    TextColor(15);
   End
   Else
   Begin
