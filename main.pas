@@ -167,9 +167,21 @@ Begin
   End;
   ReadKey;
 End;
-Procedure DeleteElement;
+Function DeleteElementNoInterface:Integer;
 Var
   OldHead : ListItem;
+Begin
+  OldHead := Q.Head^;
+  Q.Head := Q.Head^.Next;
+  If OldHead.Next = nil Then // На случай если это единственный элемент...
+  Begin
+    Q.Tail := nil; // ...убираем ещё и хвост, т.к. Head = Tail.
+  End;
+  DeleteElementNoInterface := OldHead.Data;
+End;
+Procedure DeleteElement;
+Var
+  DeletedElement : Integer;
 Begin
   ClrScr;
   TextColor(12);
@@ -177,13 +189,8 @@ Begin
   TextColor(15);
   If Not EmptyQueue Then
   Begin
-    OldHead := Q.Head^;
-    Q.Head := Q.Head^.Next;
-    If OldHead.Next = nil Then // На случай если это единственный элемент...
-    Begin
-      Q.Tail := nil; // ...убираем ещё и хвост, т.к. Head = Tail.
-    End;
-    PrintText('Элемент ' + UnicodeString(IntToStr(OldHead.Data)) + 
+    DeletedElement := DeleteElementNoInterface;
+    PrintText('Элемент ' + UnicodeString(IntToStr(DeletedElement)) + 
       ' удалён из головы очереди.', 2, 2);
   End
   Else
