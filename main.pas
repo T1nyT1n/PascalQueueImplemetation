@@ -200,19 +200,51 @@ Begin
   ReadKey;
 End;
 Procedure ClearQueue;
+Var
+  Count : Integer = 0;
 Begin
   ClrScr;
   TextColor(12);
   PrintText('Очистить очередь.', 1, 3);
   TextColor(15);
+  While Not EmptyQueue Do
+  Begin
+    DeleteElementNoInterface;
+    Count += 1;
+  End;
   PrintText('Очередь очищена. Удалено элементов:', 2, 3);
-  PrintText('?', 3, 3);
+  TextColor(14);
+  PrintText(UnicodeString(IntToStr(Count)), 3, 3);
+  TextColor(15);
   ReadKey;
 End;
 Procedure ShowAllElements;
+Var
+  ElementsString : UnicodeString = '';
+  CurrentElement : ^ListItem;
 Begin
   ClrScr;
-  PrintText('Показать все элементы.', 1, 1);
+  TextColor(12);
+  PrintText('Показать все элементы.', 1, 3);
+  TextColor(15);
+  If not EmptyQueue Then
+  Begin
+    PrintText('Все элементы, начиная с головы и заканчивая хвостом:', 2, 3);
+    CurrentElement := Q.Head;
+    While CurrentElement^.Next <> nil Do
+    Begin
+      ElementsString += UnicodeString(IntToStr(CurrentElement^.Data));
+      ElementsString += ', ';
+      CurrentElement := CurrentElement^.Next;
+    End;
+    ElementsString += UnicodeString(IntToStr(CurrentElement^.Data));
+    PrintText(ElementsString, 3, 3);
+  End
+  Else
+  Begin
+    PrintText('Очередь пуста!', 2, 3);
+    PrintText('Добавьте хотя бы один элемент, чтобы прочитать его.', , 3);
+  End;
   ReadKey;
 End;
 
