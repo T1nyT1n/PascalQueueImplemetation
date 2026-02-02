@@ -104,14 +104,22 @@ Begin
     PrintText('Введите число и нажмите Enter, чтобы подтвердить.', 4, 4);
     Ch := ReadKey;
     If (Ord(Ch) >= 48) And (Ord(Ch) <= 57) Then // Цифры
-      CurrentString := CurrentString + Ch
-    Else If Ch = #13 Then // Enter
-    Begin // TODO: добавить проверку на наличие в строке хоть чего-то
-      EnterIntegerDialogue := StrToInt(CurrentString);
-      Done := True;
+      CurrentString += Ch
+    Else If CurrentString = '' Then // Минус можно только в начале строки
+    Begin
+      If (Ch = #45) Then // Минус
+        CurrentString += Ch;
     End
-    Else If Ch = #8 Then // Backspace
-      CurrentString := Copy(CurrentString, 1, Length(CurrentString) - 1);
+    Else // Enter или Backspace можно только когда уже что-то есть
+    Begin
+      If Ch = #13 Then // Enter
+      Begin
+        EnterIntegerDialogue := StrToInt(CurrentString);
+        Done := True;
+      End
+      Else If Ch = #8 Then // Backspace
+        CurrentString := Copy(CurrentString, 1, Length(CurrentString) - 1);
+    End;
   End;
 End;
 
