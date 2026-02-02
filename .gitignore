@@ -1,4 +1,10 @@
-# Ignore the binary files
+# Visual Studio Code settings
+.vscode
+# Binary files
 main.exe
 main.o
 main
+# GTAGS files
+GPATH
+GRTAGS
+GTAGS
