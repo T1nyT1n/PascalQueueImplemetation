@@ -97,13 +97,13 @@ Begin
   While Done = False Do
   Begin
     ClrScr;
-    TextColor(12);
+    TextColor(12); // Красный
     PrintText(Text, 1, 4);
-    TextColor(15);
+    TextColor(15); // Белый
     PrintText(UnicodeString(CurrentString), 2, 4);
     PrintText('Введите число и нажмите Enter, чтобы подтвердить.', 4, 4);
     Ch := ReadKey;
-    If (Ord(Ch) >= 48) And (Ord(Ch) <= 57) Then
+    If (Ord(Ch) >= 48) And (Ord(Ch) <= 57) Then // Цифры
       CurrentString := CurrentString + Ch
     Else If Ch = #13 Then // Enter
     Begin // TODO: добавить проверку на наличие в строке хоть чего-то
@@ -118,8 +118,8 @@ End;
 { ФУНКЦИИ ДЛЯ ВЗАИМОДЕЙСТВИЯ СО СТРУКТУРОЙ }
 
 Function EmptyQueue:Boolean; // Проверка на наличие элементов
-Begin
-  If Q.Tail = nil Then
+Begin // Проверяем по указателю в переменной очереди.
+  If Q.Tail = nil Then // Можно проверять и голову, это не важно.
     EmptyQueue := True
   Else
     EmptyQueue := False;
@@ -131,17 +131,20 @@ Var
 Begin
   ClrScr;
   IntegerToInsert := EnterIntegerDialogue('Вставить элемент.');
-  New(NewListItem);
+  New(NewListItem); // Выделяем память на элемент
   NewListItem^.Data := IntegerToInsert;
+  { Сразу ссылается на голову, потому что вставляется в конец. Так очередь 
+  становится циклической. }
   NewListItem^.Next := Q.Head;
-  If EmptyQueue Then
+  If EmptyQueue Then // Но если уж очередь пустая...
   Begin
-    NewListItem^.Next := NewListItem;
+    NewListItem^.Next := NewListItem; // ...то ссылаться приходится на себя.
     Q.Tail := NewListItem;
     Q.Head := NewListItem;
   End
   Else
   Begin
+    // Иначе стоит бы ссылку в прошлом хвосте поправить.
     Q.Tail^.Next := NewListItem;
     Q.Tail := NewListItem;
   End;
@@ -159,7 +162,7 @@ Begin
   If Not EmptyQueue Then
   Begin
     PrintText('Последний элемент в очереди:', 2, 3);
-    TextColor(14);
+    TextColor(14); // Жёлтый вроде
     PrintText(UnicodeString(IntToStr(Q.Tail^.Data)), 3, 3);
     TextColor(15);
   End
@@ -178,8 +181,8 @@ Begin
   Temp := Q.Head;
   If Q.Tail = Q.Head Then // На случай если это единственный элемент...
   Begin
-    Q.Head := nil;
-    Q.Tail := nil; // ...убираем ещё и хвост, т.к. Head = Tail.
+    Q.Head := nil; // ...обнуляем все указатели.
+    Q.Tail := nil; // Так мы убедимся, что вернулись к изначальному состоянию.
   End
   Else
   Begin
@@ -187,7 +190,7 @@ Begin
     Q.Tail^.Next := Q.Head; // Обязательно нужно обновлять кольцевую связь.
   End;
   IntegerToReturn := Temp^.Data;
-  Dispose(Temp);
+  Dispose(Temp); // Удалить из памяти
   DeleteElementNoInterface := IntegerToReturn;
 End;
 Procedure PopElement;
@@ -240,6 +243,7 @@ Begin
   Begin
     PrintText('Все элементы, начиная с головы и заканчивая хвостом:', 2, 3);
     CurrentElement := Q.Head;
+    // Если следующий элемент — голова, то мы в хвосте, так что заканчиваем.
     While CurrentElement^.Next <> Q.Head Do
     Begin
       ElementsString += UnicodeString(IntToStr(CurrentElement^.Data));
@@ -298,6 +302,7 @@ Begin
   Ch := ReadKey;
   Case Ch Of
     'q': Quit := True; // Стандартная клавиша выхода из консольных приложений.
+    #27: Quit := True; // Ещё одна.
     #13: ExecuteCommand; // Клавиша Enter.
     #0: Begin // #0 — особая клавиша.
       Ch := ReadKey; // Читаем «расширенную» клавишу
