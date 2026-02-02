@@ -133,9 +133,10 @@ Begin
   IntegerToInsert := EnterIntegerDialogue('Вставить элемент.');
   New(NewListItem);
   NewListItem^.Data := IntegerToInsert;
-  NewListItem^.Next := nil;
+  NewListItem^.Next := Q.Head;
   If EmptyQueue Then
   Begin
+    NewListItem^.Next := NewListItem;
     Q.Tail := NewListItem;
     Q.Head := NewListItem;
   End
@@ -171,17 +172,25 @@ Begin
 End;
 Function DeleteElementNoInterface:Integer;
 Var
-  OldHead : ListItem;
+  Temp : ^ListItem;
+  IntegerToReturn : Integer;
 Begin
-  OldHead := Q.Head^;
-  Q.Head := Q.Head^.Next;
-  If OldHead.Next = nil Then // На случай если это единственный элемент...
+  Temp := Q.Head;
+  If Q.Tail = Q.Head Then // На случай если это единственный элемент...
   Begin
+    Q.Head := nil;
     Q.Tail := nil; // ...убираем ещё и хвост, т.к. Head = Tail.
+  End
+  Else
+  Begin
+    Q.Head := Q.Head^.Next;
+    Q.Tail^.Next := Q.Head; // Обязательно нужно обновлять кольцевую связь.
   End;
-  DeleteElementNoInterface := OldHead.Data;
+  IntegerToReturn := Temp^.Data;
+  Dispose(Temp);
+  DeleteElementNoInterface := IntegerToReturn;
 End;
-Procedure DeleteElement;
+Procedure PopElement;
 Var
   DeletedElement : Integer;
 Begin
@@ -231,7 +240,7 @@ Begin
   Begin
     PrintText('Все элементы, начиная с головы и заканчивая хвостом:', 2, 3);
     CurrentElement := Q.Head;
-    While CurrentElement^.Next <> nil Do
+    While CurrentElement^.Next <> Q.Head Do
     Begin
       ElementsString += UnicodeString(IntToStr(CurrentElement^.Data));
       ElementsString += ', ';
@@ -243,7 +252,7 @@ Begin
   Else
   Begin
     PrintText('Очередь пуста!', 2, 3);
-    PrintText('Добавьте хотя бы один элемент, чтобы прочитать его.', , 3);
+    PrintText('Добавьте хотя бы один элемент, чтобы прочитать его.', 3, 3);
   End;
   ReadKey;
 End;
@@ -255,7 +264,7 @@ Begin // При изменении не забывайте корректиро�
   Case SelectedMenuEntry Of
     1: PushElement;
     2: ReadElement;
-    3: DeleteElement;
+    3: PopElement;
     4: ClearQueue;
     5: ShowAllElements;
     6: Quit := True;
