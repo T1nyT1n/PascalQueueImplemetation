@@ -2,9 +2,7 @@ Program CircularQueueWithCaseMenu; // Реализация циклическо�
 {$codepage UTF-8} // UTF-8 для работы с Unicode (нормальные русские буквы)
 
 Uses
-  {$IFDEF MSWINDOWS}
-  Crt, // Для создания case-меню на Windows (CRT — Console RunTime).
-  {$ENDIF}
+  Crt, // Для создания case-меню (CRT — Console RunTime).
   {$IFDEF UNIX}
   CWString,
   {$ENDIF}
@@ -411,7 +409,7 @@ End; // что-то вложенности...
 { ОСНОВНАЯ ПРОГРАММА }
 Begin
   Q.Count := 0; // Инициализируем
-  CursorOff; // TODO: ДОБАВИТЬ КРОССПЛАТФОРМЕННУЮ ПРОЦЕДУРУ
+  CursorOff; // Не работает на Linux, как бы я ни пытался.
   SelectedMenuEntry := 1; // В начале выбран первый элемент меню.
   Quit := False;
   While Quit = False Do
