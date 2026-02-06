@@ -1,8 +1,10 @@
 Program CircularQueueWithCaseMenu; // Реализация циклической очереди на Pascal
 {$codepage UTF-8} // UTF-8 для работы с Unicode (нормальные русские буквы)
 
-Uses 
-  Crt, // Для создания case-меню (CRT — Console RunTime).
+Uses
+  {$IFDEF MSWINDOWS}
+  Crt, // Для создания case-меню на Windows (CRT — Console RunTime).
+  {$ENDIF}
   {$IFDEF UNIX}
   CWString,
   {$ENDIF}
@@ -22,6 +24,7 @@ Type
   { В самом типе очереди нужно хранить начало и конец. И этого достаточно. }
   Queue = record
     Head, Tail : ^ListItem;
+    Count : Integer;
   End;
 
 { ПЕРЕМЕННЫЕ }
@@ -29,13 +32,14 @@ Type
 Var
   Q : Queue; // Переменная, которая хранит очередь
   // При изменении не забывайте корректировать ExecuteCommand!
-  MenuEntries : Array[1..6] of UnicodeString = (
+  MenuEntries : Array[1..7] of UnicodeString = (
     '1. Вставить элемент.',
     '2. Прочесть элемент.',
     '3. Удалить элемент.',
     '4. Очистить очередь.',
     '5. Показать все элементы.',
-    '6. Выход.'
+    '6. Убрать элементы по условию.',
+    '7. Выход.'
   );
   SelectedMenuEntry : Integer; // По умолчанию 0, то есть в начале списка.
   Quit : Boolean; // Не пора ли уже выходить из программы?
@@ -132,15 +136,17 @@ Begin // Проверяем по указателю в переменной оч
   Else
     EmptyQueue := False;
 End;
-Procedure PushElement; // Вставка
+Function ReadElement:Integer;
+Begin
+  ReadElement := Q.Head^.Data;
+End;
+
+Procedure PushElement(DataToInsert : Integer); // Вставка
 Var
-  IntegerToInsert : Integer;
   NewListItem : ^ListItem;
 Begin
-  ClrScr;
-  IntegerToInsert := EnterIntegerDialogue('Вставить элемент.');
   New(NewListItem); // Выделяем память на элемент
-  NewListItem^.Data := IntegerToInsert;
+  NewListItem^.Data := DataToInsert;
   { Сразу ссылается на голову, потому что вставляется в конец. Так очередь 
   становится циклической. }
   NewListItem^.Next := Q.Head;
@@ -156,32 +162,10 @@ Begin
     Q.Tail^.Next := NewListItem;
     Q.Tail := NewListItem;
   End;
-  ClrScr;
-  PrintText('Элемент ' + UnicodeString(IntToStr(IntegerToInsert)) + 
-    ' вставлен в конец очереди.', 1, 1);
-  ReadKey;
+  Q.Count += 1;
 End;
-Procedure ReadElement; // Вывести элемент на экран
-Begin
-  ClrScr;
-  TextColor(12);
-  PrintText('Прочесть элемент.', 1, 3);
-  TextColor(15);
-  If Not EmptyQueue Then
-  Begin
-    PrintText('Последний элемент в очереди:', 2, 3);
-    TextColor(14); // Жёлтый вроде
-    PrintText(UnicodeString(IntToStr(Q.Tail^.Data)), 3, 3);
-    TextColor(15);
-  End
-  Else
-  Begin
-    PrintText('Очередь пуста!', 2, 3);
-    PrintText('Добавьте хотя бы один элемент, чтобы прочитать его.', 3, 3);
-  End;
-  ReadKey;
-End;
-Function DeleteElementNoInterface:Integer;
+
+Function PopElement:Integer;
 Var
   Temp : ^ListItem;
   IntegerToReturn : Integer;
@@ -199,9 +183,58 @@ Begin
   End;
   IntegerToReturn := Temp^.Data;
   Dispose(Temp); // Удалить из памяти
-  DeleteElementNoInterface := IntegerToReturn;
+  Q.Count -= 1;
+  PopElement := IntegerToReturn;
 End;
-Procedure PopElement;
+
+Function ClearQueue:Integer;
+Var
+  ElementsCount : Integer = 0;
+Begin
+  While Not EmptyQueue Do
+  Begin
+    PopElement;
+    ElementsCount += 1;
+  End;
+  ClearQueue := ElementsCount;
+End;
+
+{ ФУНКЦИИ И ПРОЦЕДУРЫ ДЛЯ ВЫПОЛНЕНИЯ ОПЕРАЦИЙ С ОЧЕРЕДЬЮ ПОЛЬЗОВАТЕЛЕМ }
+
+Procedure PushElementUI;
+Var
+  IntegerToInsert : Integer;
+Begin
+  IntegerToInsert := EnterIntegerDialogue('Вставить элемент.');
+  PushElement(IntegerToInsert);
+  ClrScr;
+  PrintText('Элемент ' + UnicodeString(IntToStr(IntegerToInsert)) + 
+    ' вставлен в конец очереди.', 1, 1);
+  ReadKey; // Ждём, пока пользователь прочитает и нажмёт что-нибудь.
+End;
+
+Procedure ReadElementUI; // Вывести элемент на экран
+Begin
+  ClrScr;
+  TextColor(12);
+  PrintText('Прочесть элемент.', 1, 3);
+  TextColor(15);
+  If Not EmptyQueue Then
+  Begin
+    PrintText('Первый элемент в очереди:', 2, 3);
+    TextColor(14); // Жёлтый вроде
+    PrintText(UnicodeString(IntToStr(ReadElement)), 3, 3);
+    TextColor(15);
+  End
+  Else
+  Begin
+    PrintText('Очередь пуста!', 2, 3);
+    PrintText('Добавьте хотя бы один элемент, чтобы прочитать его.', 3, 3);
+  End;
+  ReadKey;
+End;
+
+Procedure PopElementUI;
 Var
   DeletedElement : Integer;
 Begin
@@ -211,7 +244,7 @@ Begin
   TextColor(15);
   If Not EmptyQueue Then
   Begin
-    DeletedElement := DeleteElementNoInterface;
+    DeletedElement := PopElement;
     PrintText('Элемент ' + UnicodeString(IntToStr(DeletedElement)) + 
       ' удалён из головы очереди.', 2, 2);
   End
@@ -219,26 +252,24 @@ Begin
     PrintText('Нечего удалять, очередь пуста!', 2, 2);
   ReadKey;
 End;
-Procedure ClearQueue;
+
+Procedure ClearQueueUI;
 Var
-  Count : Integer = 0;
+  Count : Integer;
 Begin
   ClrScr;
   TextColor(12);
   PrintText('Очистить очередь.', 1, 3);
   TextColor(15);
-  While Not EmptyQueue Do
-  Begin
-    DeleteElementNoInterface;
-    Count += 1;
-  End;
+  Count := ClearQueue; 
   PrintText('Очередь очищена. Удалено элементов:', 2, 3);
   TextColor(14);
   PrintText(UnicodeString(IntToStr(Count)), 3, 3);
   TextColor(15);
   ReadKey;
 End;
-Procedure ShowAllElements;
+
+Procedure ShowAllElementsUI;
 Var
   ElementsString : UnicodeString = '';
   CurrentElement : ^ListItem;
@@ -269,17 +300,72 @@ Begin
   ReadKey;
 End;
 
+{ Важно: взаимодействует со структурой только с помощью уже готовых процедур
+EmptyQueue, ReadElement, PopElement, PushElement и т.д. Они даже специально
+были отделены от своих UI частей, чтобы работать внутри этой подпрограммы. }
+Procedure RemoveElementsByConditionUI;
+Var
+  Condition : Char = #0;
+  Value : Integer;
+  CurrentData : Integer;
+  i : Integer;
+Begin
+  If Not EmptyQueue Then
+  Begin
+    Value := EnterIntegerDialogue('Введите число для сравнения.');
+    ClrScr;
+    TextColor(12);
+    PrintText('Выберите условие (<, >, =).', 1, 2);
+    TextColor(15);
+    PrintText('Введите соответствующий символ.', 2, 2);
+    While ((Condition <> '<') And (Condition <> '>') And (Condition <> '=')) Do
+      Condition := ReadKey;
+    // Перебрать все элементы очереди по её длине, потому что мы её не очищаем.
+    For i := 1 To Q.Count Do
+    Begin
+      CurrentData := ReadElement;
+      PopElement;
+      Case Condition Of
+        '<': If (CurrentData >= Value) Then
+        Begin
+          PushElement(CurrentData);
+        End;
+        '>': If (CurrentData <= Value) Then
+        Begin
+          PushElement(CurrentData);
+        End;
+        '=': If (CurrentData <> Value) Then
+        Begin
+          PushElement(CurrentData);
+        End;
+      End;
+    End;
+    ClrScr;
+    PrintText('Очередь обновлена.', 1, 1);
+  End
+  Else
+  Begin
+    ClrScr;
+    TextColor(12);
+    PrintText('Очередь пуста!', 1, 2);
+    TextColor(15);
+    PrintText('Добавьте хотя бы один элемент.', 2, 2);
+  End;
+  ReadKey;
+End;
+
 { ПРОЦЕДУРЫ ДЛЯ ВЗАИМОДЕЙСТВИЯ С ПОЛЬЗОВАТЕЛЕМ }
 
 Procedure ExecuteCommand; // Выполнить выбранную в меню команду
 Begin // При изменении не забывайте корректировать MenuEntries!
   Case SelectedMenuEntry Of
-    1: PushElement;
-    2: ReadElement;
-    3: PopElement;
-    4: ClearQueue;
-    5: ShowAllElements;
-    6: Quit := True;
+    1: PushElementUI;
+    2: ReadElementUI;
+    3: PopElementUI;
+    4: ClearQueueUI;
+    5: ShowAllElementsUI;
+    6: RemoveElementsByConditionUI;
+    7: Quit := True;
   End;
 End;
 
@@ -324,6 +410,7 @@ End; // что-то вложенности...
 
 { ОСНОВНАЯ ПРОГРАММА }
 Begin
+  Q.Count := 0; // Инициализируем
   CursorOff; // TODO: ДОБАВИТЬ КРОССПЛАТФОРМЕННУЮ ПРОЦЕДУРУ
   SelectedMenuEntry := 1; // В начале выбран первый элемент меню.
   Quit := False;
@@ -332,5 +419,6 @@ Begin
     ShowMenu;
     MenuKeyboardInput;
   End;
+  ClearQueue; // Очистить память перед выходом.
   CursorOn;
 End.
