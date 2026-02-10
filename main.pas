@@ -274,11 +274,11 @@ Var
 Begin
   ClrScr;
   TextColor(12);
-  PrintText('Показать все элементы.', 1, 3);
+  PrintText('Показать все элементы.', 1, 4);
   TextColor(15);
   If not EmptyQueue Then
   Begin
-    PrintText('Все элементы, начиная с головы и заканчивая хвостом:', 2, 3);
+    PrintText('Все элементы, начиная с головы и заканчивая хвостом:', 2, 4);
     CurrentElement := Q.Head;
     // Если следующий элемент — голова, то мы в хвосте, так что заканчиваем.
     While CurrentElement^.Next <> Q.Head Do
@@ -288,7 +288,8 @@ Begin
       CurrentElement := CurrentElement^.Next;
     End;
     ElementsString += UnicodeString(IntToStr(CurrentElement^.Data));
-    PrintText(ElementsString, 3, 3);
+    PrintText(ElementsString, 3, 4);
+    PrintText('Всего: ' + UnicodeString(IntToStr(Q.Count)), 4, 4);
   End
   Else
   Begin
